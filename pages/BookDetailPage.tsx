@@ -1,7 +1,7 @@
 import React, { useState, useReducer, useCallback } from 'react';
 import { Book } from '../types';
 import { generateBookInfo, GenerationType } from '../services/geminiService';
-import { ChevronLeftIcon, SparklesIcon, LoadingSpinner, PencilIcon } from '../components/icons';
+import { ChevronLeftIcon, SparklesIcon, LoadingSpinner, PencilIcon, TrashIcon } from '../components/icons';
 import PdfViewer from '../components/PdfViewer';
 import StarRating from '../components/StarRating';
 
@@ -11,11 +11,12 @@ interface BookDetailPageProps {
   onAiUpdate: (bookId: string, type: GenerationType, content: string) => void;
   onRatingUpdate: (bookId: string, rating: number) => void;
   onBack: () => void;
+  onDeleteBook: (bookId: string) => Promise<void>;
 }
 
 type Tab = 'details' | 'summary' | 'authorIntro';
 
-const BookDetailPage: React.FC<BookDetailPageProps> = ({ book, isAdmin, onAiUpdate, onRatingUpdate, onBack }) => {
+const BookDetailPage: React.FC<BookDetailPageProps> = ({ book, isAdmin, onAiUpdate, onRatingUpdate, onBack, onDeleteBook }) => {
   const [isReading, setIsReading] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('details');
   
@@ -29,6 +30,20 @@ const BookDetailPage: React.FC<BookDetailPageProps> = ({ book, isAdmin, onAiUpda
     // Prevent switching tabs while content is being generated
     if (document.body.dataset.generating === 'true') return;
     setActiveTab(tab);
+  };
+  
+  const handleDelete = async () => {
+    if (!isAdmin) return;
+    const isConfirmed = window.confirm(`আপনি কি "${selectedBook.title}" বইটি স্থায়ীভাবে মুছে ফেলতে চান? এই কাজটি ফিরিয়ে আনা যাবে না।`);
+    if (isConfirmed) {
+      try {
+        await onDeleteBook(selectedBook.id);
+        // Navigation is handled in App.tsx after state update
+      } catch (error) {
+        console.error("Failed to delete book:", error);
+        alert("বইটি ডিলিট করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      }
+    }
   };
 
   return (
@@ -57,6 +72,15 @@ const BookDetailPage: React.FC<BookDetailPageProps> = ({ book, isAdmin, onAiUpda
           >
             বইটি পড়ুন
           </button>
+           {isAdmin && (
+            <button
+              onClick={handleDelete}
+              className="mt-4 w-full flex justify-center items-center py-3 px-4 bg-red-600 text-white font-bold rounded-lg shadow-md hover:bg-red-700 transition-all duration-300"
+            >
+              <TrashIcon className="w-5 h-5 mr-2" />
+              বইটি ডিলিট করুন
+            </button>
+          )}
         </div>
 
         <div className="md:w-2/3 mt-6 md:mt-0">

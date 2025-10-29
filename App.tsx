@@ -5,7 +5,7 @@ import BookDetailPage from './pages/BookDetailPage';
 import AddBookPage from './pages/AddBookPage';
 import AuthComponent from './components/Auth';
 import { GenerationType } from './services/geminiService';
-import { getAllBooks, updateBook, addBook } from './services/dbService';
+import { getAllBooks, updateBook, addBook, deleteBook } from './services/dbService';
 import { supabase } from './services/supabaseClient';
 import { Session } from '@supabase/supabase-js';
 import { LoadingSpinner } from './components/icons';
@@ -118,13 +118,26 @@ const App: React.FC = () => {
 
   const handleAddBook = async (newBookData: Omit<Book, 'id' | 'user_id' | 'description'> & { description?: string }) => {
     if (!isAdmin) return;
+    
     const finalBookData = {
         ...newBookData,
-        description: newBookData.description || `A new book added: ${newBookData.title} by ${newBookData.author}.`,
+        description: newBookData.description || '', // Use provided description or an empty string
     };
     const newBook = await addBook(finalBookData);
     setBooks(prev => [newBook, ...prev]);
     handleBackToLibrary();
+  };
+  
+  const handleDeleteBook = async (bookId: string) => {
+    if (!isAdmin) return;
+    try {
+        await deleteBook(bookId);
+        setBooks(prevBooks => prevBooks.filter(book => book.id !== bookId));
+        handleBackToLibrary();
+    } catch (error) {
+        console.error('Error deleting book from App:', error);
+        alert('Failed to delete book.');
+    }
   };
   
   const selectedBook = books.find(book => book.id === selectedBookId);
@@ -158,7 +171,14 @@ const App: React.FC = () => {
         return <AuthComponent onBack={handleBackToLibrary} />;
       case 'book-detail':
         return selectedBook ? (
-          <BookDetailPage book={selectedBook} isAdmin={isAdmin} onAiUpdate={handleAiUpdate} onRatingUpdate={handleRatingUpdate} onBack={handleBackToLibrary} />
+          <BookDetailPage 
+            book={selectedBook} 
+            isAdmin={isAdmin} 
+            onAiUpdate={handleAiUpdate} 
+            onRatingUpdate={handleRatingUpdate} 
+            onBack={handleBackToLibrary}
+            onDeleteBook={handleDeleteBook}
+          />
         ) : (
           <LibraryPage books={books} isAdmin={isAdmin} isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} onSelectBook={handleSelectBook} onAddBookClick={handleAddBookClick} />
         );

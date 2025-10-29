@@ -13,6 +13,7 @@ interface AddBookPageProps {
 const AddBookPage: React.FC<AddBookPageProps> = ({ onAddBook, onBack }) => {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
+  const [description, setDescription] = useState('');
   const [genre, setGenre] = useState('');
   const [publicationYear, setPublicationYear] = useState<number | ''>('');
   const [pageCount, setPageCount] = useState<number | ''>('');
@@ -121,6 +122,7 @@ const AddBookPage: React.FC<AddBookPageProps> = ({ onAddBook, onBack }) => {
       await onAddBook({ 
           title, 
           author, 
+          description,
           coverImage: coverImageUrl, 
           pdfUrl, 
           genre, 
@@ -182,6 +184,11 @@ const AddBookPage: React.FC<AddBookPageProps> = ({ onAddBook, onBack }) => {
               required disabled={isDisabled}
             />
           </div>
+
+           <div>
+              <label htmlFor="description" className="block text-sm font-medium text-stone-700 dark:text-stone-300">বিবরণ (ঐচ্ছিক)</label>
+              <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-stone-700 border border-stone-300 dark:border-stone-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 disabled:opacity-50" disabled={isDisabled}></textarea>
+            </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
