@@ -1,0 +1,5 @@
+{
+  "name": "Boi Ghor - A Book Library",
+  "description": "A digital library interface to browse books. Click on a book to view details, including an AI-generated summary and author biography. Also features a fullscreen PDF reader.",
+  "requestFramePermissions": []
+}
